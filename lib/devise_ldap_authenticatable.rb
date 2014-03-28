@@ -1,11 +1,11 @@
 # encoding: utf-8
 require 'devise'
+require 'net/ldap'
 
 require 'devise_ldap_authenticatable/exception'
 require 'devise_ldap_authenticatable/logger'
-require 'devise_ldap_authenticatable/schema'
-require 'devise_ldap_authenticatable/ldap_adapter'
-require 'devise_ldap_authenticatable/routes'
+require 'devise_ldap_authenticatable/ldap/adapter'
+require 'devise_ldap_authenticatable/ldap/connection'
 
 # Get ldap information from config/ldap.yml now
 module Devise
@@ -34,6 +34,12 @@ module Devise
   
   mattr_accessor :ldap_auth_username_builder
   @@ldap_auth_username_builder = Proc.new() {|attribute, login, ldap| "#{attribute}=#{login},#{ldap.base}" }
+
+  mattr_accessor :ldap_auth_password_builder
+  @@ldap_auth_password_builder = Proc.new() {|new_password| Net::LDAP::Password.generate(:sha, new_password) }
+
+  mattr_accessor :ldap_ad_group_check
+  @@ldap_ad_group_check = false
 end
 
 # Add ldap_authenticatable strategy to defaults.
